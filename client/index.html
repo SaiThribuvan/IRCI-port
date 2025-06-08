@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRCI – Inventory Republic Collaborative Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1d3a 50%, #0f1419 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00d4ff;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 14, 39, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 400;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #00d4ff;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding-top: 80px;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffffff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero-tagline {
+            font-size: 1.4rem;
+            color: #b0c4de;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        .hero-founder {
+            font-size: 1.1rem;
+            color: #00d4ff;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .hero-hook {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 40px;
+            font-style: italic;
+            padding: 20px;
+            border-left: 3px solid #00d4ff;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #00d4ff;
+            border-color: #00d4ff;
+        }
+
+        .btn-secondary:hover {
+            background: #00d4ff;
+            color: #0a0e27;
+        }
+
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ai-brain {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(0, 212, 255, 0.1), rgba(0, 153, 204, 0.1));
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .ai-brain::before {
+            content: '🧠';
+            font-size: 80px;
+        }
+
+        /* Section styling */
+        .section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffffff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #b0c4de;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Vision Section */
+        .vision-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .vision-text {
+            font-size: 1.2rem;
+            color: #ffffff;
+            line-height: 1.8;
+            padding: 40px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        /* Problem Section */
+        .problem {
+            background: linear-gradient(135deg, rgba(255, 0, 85, 0.1), rgba(139, 0, 139, 0.1));
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ff0055;
+            margin-bottom: 10px;
+        }
+
+        .pain-point {
+            font-size: 1.3rem;
+            font-style: italic;
+            text-align: center;
+            color: #ffccdd;
+            padding: 30px;
+            background: rgba(255, 0, 85, 0.1);
+            border-radius: 15px;
+            border-left: 4px solid #ff0055;
+        }
+
+        /* Solution Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        /* Global Context */
+        .global-text {
+            font-size: 1.1rem;
+            color: #ffffff;
+            line-height: 1.8;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* How It Works */
+        .how-it-works-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .process-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .brain-diagram {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(0, 212, 255, 0.2), rgba(255, 255, 255, 0.1));
+            border: 3px solid #00d4ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* India Section */
+        .india {
+            background: linear-gradient(135deg, rgba(255, 153, 0, 0.1), rgba(255, 69, 0, 0.1));
+        }
+
+        .india-stats {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .big-stat {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #ff9500;
+            margin: 20px 0;
+        }
+
+        .india-quote {
+            font-size: 1.4rem;
+            font-style: italic;
+            color: #ffcc80;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Founder Section */
+        .founder-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 50px;
+            align-items: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .founder-image-container {
+            position: relative;
+        }
+
+        .founder-image {
+            width: 250px;
+            height: 250px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 3px solid #00d4ff;
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.3);
+        }
+
+        .founder-info h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .founder-role {
+            font-size: 1.2rem;
+            color: #b0c4de;
+            margin-bottom: 30px;
+        }
+
+        .founder-quote {
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #ffffff;
+            padding: 25px;
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 4px solid #00d4ff;
+            border-radius: 10px;
+        }
+
+        /* CTA Section */
+        .final-cta {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 153, 204, 0.1));
+            text-align: center;
+        }
+
+        .cta-buttons-final {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(10, 14, 39, 0.9);
+            padding: 40px 0;
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: #b0c4de;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #00d4ff;
+        }
+
+        .copyright {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-content,
+            .how-it-works-content,
+            .founder-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .cta-buttons,
+            .cta-buttons-final {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 0.5s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 1.5s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 0.8s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 1.8s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 2.8s;"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">IRCI</div>
+                <ul class="nav-links">
+                    <li><a href="#vision">Vision</a></li>
+                    <li><a href="#solution">Solution</a></li>
+                    <li><a href="#founder">Founder</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>IRCI<br>Inventory Republic<br>Collaborative Intelligence</h1>
+                    <p class="hero-tagline">Transforming the Way Researchers Work with AI.</p>
+                    <p class="hero-founder">Founded by Thribhuvan, AI & Software Developer</p>
+                    <div class="hero-hook">
+                        "What if AI could assist researchers 10x faster than humans?"
+                    </div>
+                    <div class="cta-buttons">
+                        <a href="#vision" class="btn btn-primary">Explore the Vision</a>
+                        <a href="#contact" class="btn btn-secondary">Join Beta Access</a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="ai-brain"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vision Section -->
+    <section id="vision" class="section vision">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">The Future of Research Is Human + AI</h2>
+            </div>
+            <div class="vision-content">
+                <div class="vision-text">
+                    IRCI is redefining how researchers, innovators, and thinkers interact with artificial intelligence. By aligning AI with human cognition, we empower researchers to move beyond repetition and into innovation.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="section problem">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">A Hidden Crisis in Research</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">80%</div>
+                    <p>of researchers spend 60% of their time on repetitive tasks</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">∞</div>
+                    <p>Innovation delays due to manual work and inefficiencies</p>
+                </div>
+            </div>
+            <div class="pain-point">
+                "Brilliant minds are stuck doing tedious work—because AI isn't designed for them… yet."
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section id="solution" class="section solution">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">IRCI: AI That Thinks With You</h2>
+                <p class="section-subtitle">Collaborative Intelligence</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3 class="feature-title">Human-Aligned Reasoning</h3>
+                    <p>AI that understands and complements human thought patterns</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Real-Time Cognitive Support</h3>
+                    <p>Instant assistance that adapts to your research methodology</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Non-Linear Thinking</h3>
+                    <p>Designed for creative, out-of-the-box problem solvers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Context Section -->
+    <section class="section global-context">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Global Context and Thought Integration</h2>
+            </div>
+            <div class="global-text">
+                IRCI develops AI models that replicate and support out-of-the-box thinkers through collaborative reasoning and adaptive logic. It's not just AI—it's intelligence with you.
+            </div>
+        </div>
+    </section>
+
+    <!-- How IRCI Works -->
+    <section class="section how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How IRCI Works</h2>
+            </div>
+            <div class="how-it-works-content">
+                <div class="process-description">
+                    <p style="font-size: 1.2rem; color: #ffffff; line-height: 1.8;">
+                        IRCI mimics human cognitive processes—thinking collaboratively, rationally, and humanely. Our AI doesn't replace human intelligence; it amplifies it through seamless integration with natural thought patterns.
+                    </p>
+                </div>
+                <div class="process-visual">
+                    <div class="brain-diagram">🤝</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- India Section -->
+    <section class="section india">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Powering the 97%</h2>
+            </div>
+            <div class="india-stats">
+                <div class="big-stat">97%</div>
+                <div class="india-quote">
+                    "97% of the world's population lives in less than 3% of enterprises."
+                </div>
+                <p style="font-size: 1.1rem; color: #ffffff; margin-bottom: 20px;">
+                    <strong>Problem:</strong> Indian innovators lack structured support and scalable tools.
+                </p>
+                <p style="font-size: 1.1rem; color: #00d4ff;">
+                    <strong>Solution:</strong> IRCI empowers them with guided innovation systems.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder Section -->
+    <section id="founder" class="section founder">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Meet the Founder</h2>
+            </div>
+            <div class="founder-content">
+                <div class="founder-image-container">
+                    <img src="founder-profile.jpg" alt="Thribhuvan - Founder of IRCI" class="founder-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display: none; width: 250px; height: 250px; border-radius: 20px; background: linear-gradient(45deg, #00d4ff, #0099cc); align-items: center; justify-content: center; font-size: 60px; border: 3px solid #00d4ff; box-shadow: 0 20px 40px rgba(0, 212, 255, 0.3);">👨‍💻</div>
+                </div>
+                <div class="founder-info">
+                    <h3>Thribhuvan</h3>
+                    <p class="founder-role">AI & Software Developer</p>
+                    <div class="founder-quote">
+                        "We don't just build AI. We build the future of human creativity, powered by intelligence."
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section id="contact" class="section final-cta">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Ready to Transform Research?</h2>
+            </div>
+            <!-- Updated Email Collection Form with Backend Integration -->
+            <div class="email-collection-form" style="max-width: 500px; margin: 0 auto 40px;">
+                <div id="emailForm">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                        <input 
+                            type="email" 
+                            id="contactEmail" 
+                            placeholder="Enter your email address"
+                            style="flex: 1; min-width: 250px; padding: 15px 20px; border-radius: 50px; border: 2px solid rgba(0, 212, 255, 0.3); background: rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 16px; outline: none;"
+                            onfocus="this.style.borderColor='#00d4ff'"
+                            onblur="this.style.borderColor='rgba(0, 212, 255, 0.3)'"
+                        >
+                        <button 
+                            onclick="submitEmail('waitlist')" 
+                            class="btn btn-primary"
+                            style="white-space: nowrap;"
+                        >
+                            Join Waitlist
+                        </button>
+                    </div>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <textarea 
+                            id="contactMessage" 
+                            placeholder="Tell us about your research needs (optional)"
+                            style="width: 100%; max-width: 400px; padding: 15px 20px; border-radius: 15px; border: 2px solid rgba(0, 212, 255, 0.3); background: rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 14px; outline: none; resize: vertical; min-height: 80px;"
+                            onfocus="this.style.borderColor='#00d4ff'"
+                            onblur="this.style.borderColor='rgba(0, 212, 255, 0.3)'"
+                        ></textarea>
+                    </div>
+                </div>
+                <div id="emailSuccess" style="display: none; background: rgba(0, 255, 136, 0.1); color: #00ff88; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.3);">
+                    <h3 style="margin-bottom: 10px;">🎉 Thank you!</h3>
+                    <p>We'll be in touch soon with exclusive updates about IRCI.</p>
+                </div>
+                <div id="emailError" style="display: none; background: rgba(255, 71, 87, 0.1); color: #ff4757; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255, 71, 87, 0.3);">
+                </div>
+            </div>
+            <div class="cta-buttons-final">
+                <button onclick="submitEmail('founder')" class="btn btn-secondary">Connect with Founder</button>
+                <button onclick="submitEmail('demo')" class="btn btn-secondary">Request Demo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <ul class="footer-links">
+                    <li><a href="#vision">About</a></li>
+                    <li><a href="#vision">Vision</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="#">LinkedIn</a></li>
+                </ul>
+                <div class="copyright">© 2025 IRCI</div>
+            </div>
+        </div>
+    </footer>
+
+    
+    <script src="client.js"></script>
+    <script src="server.js"></script>
+</body>
+</html>
