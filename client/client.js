@@ -11,8 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Dynamic backend URL based on environment
   const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api/submit-response'
-    : 'https://your-production-api.com/api/submit-response'; // Replace with your actual production URL
+    ? 'https://irci-port.onrender.com/api/submit-response'
+    : 'https://irci-port.onrender.com/api/submit-response'; // Replace with your actual production URL
 
   // Form submission handler
   async function submitEmail(actionType = "contact") {

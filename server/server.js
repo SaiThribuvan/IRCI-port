@@ -2,150 +2,202 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Enhanced Middleware
+app.use(helmet()); // Security headers
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+  methods: ['GET', 'POST']
+}));
+app.use(express.json({ limit: '10kb' })); // Body size limit
 
-// MongoDB Connection
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later'
+});
+app.use('/api/', limiter);
+
+// Configuration Validation
+const requiredEnvVars = ['MONGODB_URI'];
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`❌ ${envVar} is not defined in your .env file`);
+    process.exit(1);
+  }
+}
+
+// Enhanced MongoDB Connection
 const connectDB = async () => {
   try {
+    console.log('🔗 Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 10
     });
-    console.log('MongoDB connected successfully');
+    console.log('✅ MongoDB connected successfully');
   } catch (err) {
-    console.error('MongoDB connection error:', err);
-    process.exit(1); // Exit process with failure
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
   }
 };
 
-// User Response Schema
+// Improved User Response Schema
 const userResponseSchema = new mongoose.Schema({
   email: { 
     type: String, 
-    required: true, 
+    required: [true, 'Email is required'],
     unique: true,
+    trim: true,
+    lowercase: true,
     validate: {
-      validator: function(v) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-      },
+      validator: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
       message: props => `${props.value} is not a valid email address!`
     }
   },
   message: { 
     type: String, 
-    maxlength: 500 
+    trim: true,
+    maxlength: [500, 'Message cannot exceed 500 characters'] 
   },
   actionType: { 
     type: String, 
-    enum: ['waitlist', 'founder', 'demo', 'contact'], 
-    required: true 
+    enum: {
+      values: ['waitlist', 'founder', 'demo', 'contact'],
+      message: 'Invalid action type'
+    },
+    required: [true, 'Action type is required']
   },
   createdAt: { 
     type: Date, 
-    default: Date.now 
+    default: Date.now,
+    index: { expires: '365d' } // Auto-delete after 1 year
   },
   ipAddress: {
     type: String,
     required: false
   }
+}, {
+  timestamps: true // Adds createdAt and updatedAt automatically
 });
 
-// Indexes
-userResponseSchema.index({ email: 1 }, { unique: true });
-userResponseSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 365 }); // Optional: Auto-delete after 1 year
-
+// Model
 const UserResponse = mongoose.model('UserResponse', userResponseSchema);
 
-// API Endpoints
+// Enhanced API Endpoint
 app.post('/api/submit-response', async (req, res) => {
   try {
     const { email, message, actionType } = req.body;
-    const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ipAddress = req.ip;
 
-    // Validate actionType
-    if (!['waitlist', 'founder', 'demo', 'contact'].includes(actionType)) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Invalid action type' 
-      });
-    }
-
-    // Create new response
-    const newResponse = new UserResponse({
-      email,
-      message: message || '',
+    // Create and save response
+    const newResponse = await UserResponse.create({ 
+      email, 
+      message: message?.trim(), 
       actionType,
       ipAddress
     });
 
-    await newResponse.save();
-    
     res.status(201).json({ 
-      success: true,
-      message: 'Thank you for your submission!' 
+      success: true, 
+      message: 'Thank you for your submission!',
+      data: {
+        id: newResponse._id,
+        createdAt: newResponse.createdAt
+      }
     });
     
   } catch (error) {
-    console.error('Error saving response:', error);
-    
+    console.error('❌ Error saving response:', error);
+
+    // Mongoose validation error
     if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(el => el.message);
       return res.status(400).json({ 
-        success: false,
-        error: error.message 
+        success: false, 
+        error: 'Validation failed',
+        details: errors 
       });
     }
-    
+
+    // Duplicate key error
     if (error.code === 11000) {
       return res.status(409).json({ 
-        success: false,
+        success: false, 
         error: 'This email is already registered' 
       });
     }
-    
+
     res.status(500).json({ 
-      success: false,
-      error: 'Internal server error' 
+      success: false, 
+      error: 'Internal server error',
+      reference: error.reference || undefined
     });
   }
 });
 
-// Health Check Endpoint
+// Enhanced Health Check
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK',
+  const dbStatus = mongoose.connection.readyState;
+  const status = dbStatus === 1 ? 'healthy' : 'degraded';
+  
+  res.status(dbStatus === 1 ? 200 : 503).json({
+    status,
     timestamp: new Date().toISOString(),
-    dbStatus: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    db: {
+      status: dbStatus === 1 ? 'connected' : 'disconnected',
+      ping: dbStatus
+    },
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
   });
 });
 
-// Error Handling Middleware
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: 'Resource not found' });
+});
+
+// Improved Error Handling
 app.use((err, req, res, next) => {
-  console.error('Server error:', err);
+  console.error('🔥 Unhandled Error:', err);
   res.status(500).json({ 
-    success: false,
-    error: 'Internal server error' 
+    success: false, 
+    error: 'Internal server error',
+    requestId: req.id || undefined
   });
 });
 
-// Start Server
+// Server Startup
 const startServer = async () => {
   await connectDB();
+  
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🛡️ CORS allowed origins: ${process.env.ALLOWED_ORIGINS || 'All'}`);
   });
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    console.log('🛑 Received shutdown signal');
+    server.close(async () => {
+      await mongoose.connection.close();
+      console.log('🔌 MongoDB connection closed');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 };
 
 startServer();
-
-// Handle shutdown gracefully
-process.on('SIGINT', async () => {
-  await mongoose.connection.close();
-  console.log('MongoDB connection closed');
-  process.exit(0);
-});
